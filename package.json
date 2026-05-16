@@ -1,0 +1,19 @@
+{
+  "name": "bob-agent",
+  "version": "1.0.0",
+  "description": "CLI agent powered by IBM Bob",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
+  },
+  "dependencies": {
+    "dotenv": "^16.0.0"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
+  }
+}
