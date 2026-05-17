@@ -1,4 +1,5 @@
 const { spawnSync } = require('child_process');
+const logger = require('../config/logger');
 const securityConfig = require('../config/security');
 
 const BOB_API_URL = process.env.BOB_API_URL || '';
@@ -121,10 +122,10 @@ function executeShellCommand(prompt) {
   );
 
   if (process.env.DEBUG === 'true') {
-    console.log('Shell STDOUT:', result.stdout?.substring(0, 300));
-    console.log('Shell STDERR:', result.stderr?.substring(0, 300));
-    console.log('Shell Status:', result.status);
-    console.log('Shell Error:', result.error?.message);
+    logger.debug(`Shell STDOUT: ${result.stdout?.substring(0, 300)}`);
+    logger.debug(`Shell STDERR: ${result.stderr?.substring(0, 300)}`);
+    logger.debug(`Shell Status: ${result.status}`);
+    logger.debug(`Shell Error: ${result.error?.message}`);
   }
 
   return result;
@@ -132,7 +133,7 @@ function executeShellCommand(prompt) {
 
 function processShellResult(result, prompt) {
   if (result.error) {
-    console.warn('Shell execution failed, using mock:', result.error.message);
+    logger.warn(`Shell execution failed, using mock: ${result.error.message}`);
     return mockResponse(prompt);
   }
 
@@ -146,17 +147,15 @@ function processShellResult(result, prompt) {
 
   const cleanedOutput = cleanShellOutput(stdout);
   if (cleanedOutput) {
-    if (process.env.DEBUG === 'true') {
-      console.log('Using cleaned stdout as response');
-    }
+    logger.debug('Using cleaned stdout as response');
     return cleanedOutput;
   }
 
   if (result.status !== 0 && stderr) {
-    console.log('Bob Shell stderr:', stderr);
+    logger.warn(`Bob Shell stderr: ${stderr}`);
   }
 
-  console.warn('Empty response from Bob Shell, using mock');
+  logger.warn('Empty response from Bob Shell, using mock');
   return mockResponse(prompt);
 }
 
@@ -168,7 +167,7 @@ async function askBobViaShell(prompt) {
 async function askBobViaAPI(prompt) {
   const hasValidKey = validateApiKey();
   if (!hasValidKey) {
-    console.warn('No API key configured, using mock responses');
+    logger.warn('No API key configured, using mock responses');
     return mockResponse(prompt);
   }
 
@@ -181,7 +180,7 @@ async function askBobViaAPI(prompt) {
     try {
       if (attempt > 0) {
         const delay = getRetryDelay(attempt - 1);
-        console.log(`Retrying in ${Math.round(delay)}ms... (attempt ${attempt + 1}/${maxRetries})`);
+        logger.info(`Retrying in ${Math.round(delay)}ms... (attempt ${attempt + 1}/${maxRetries})`);
         await sleep(delay);
       }
 
@@ -218,7 +217,7 @@ async function askBobViaAPI(prompt) {
       }
       
       if (attempt < maxRetries - 1) {
-        console.warn(`Request failed: ${error.message}`);
+        logger.warn(`Request failed: ${error.message}`);
       }
     }
   }
@@ -244,14 +243,22 @@ async function askBob(prompt) {
 
 function mockResponse(prompt) {
   if (prompt.includes('PLANNER')) {
-    return JSON.stringify({
-      tool: 'list_files',
-      target: '.',
-      instruction: prompt.substring(0, 100),
-      taskType: 'code'
-    });
+    return JSON.stringify({ tool: 'list_files', target: '.', instruction: prompt.substring(0, 100), taskType: 'code' });
   }
-  return 'console.log("Hello from Bob!");';
+  if (prompt.startsWith('You are a senior technical interviewer')) {
+    return JSON.stringify([
+      { id: 1, question: 'What is the overall purpose of this module and what problem does it solve?' },
+      { id: 2, question: 'Walk through the main execution flow — what happens step by step when the core function is called?' },
+      { id: 3, question: 'Why was this particular design decision made, and what are the trade-offs?' },
+      { id: 4, question: 'How does this code handle errors and edge cases? Are there any gaps?' },
+      { id: 5, question: 'What would you change or improve in this implementation and why?' },
+      { id: 6, question: 'Are there any security or performance concerns in this code?' },
+    ]);
+  }
+  if (prompt.startsWith('Evaluate this technical interview answer')) {
+    return JSON.stringify({ score: 3, feedback: 'Mock mode — connect IBM Bob for real evaluation.', correct: 'Answer submitted successfully.', missed: 'N/A in mock mode.' });
+  }
+  return 'This is a mock response. Connect your IBM Bob API key to get real code feedback and analysis.';
 }
 
 module.exports = { askBob, validateApiKey };

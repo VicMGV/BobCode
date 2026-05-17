@@ -595,20 +595,56 @@ Generate the code review now:
 // EXECUTOR PROMPT SELECTOR - Returns appropriate prompt based on task type
 // ============================================================================
 
+const INTERVIEW_GENERATE_PROMPT = (context) => `You are a senior technical interviewer. Analyze the following code and generate exactly 6 interview questions that test deep understanding.
+
+Respond with ONLY a valid JSON array — no markdown, no explanation:
+[{"id":1,"question":"..."},{"id":2,"question":"..."},{"id":3,"question":"..."},{"id":4,"question":"..."},{"id":5,"question":"..."},{"id":6,"question":"..."}]
+
+Questions must cover: overall purpose, internal logic flow, a specific design decision, error handling or edge cases, a potential issue or improvement, and one security or performance concern.
+
+CODE:
+${context.substring(0, 3000)}
+
+JSON:`;
+
+const INTERVIEW_EVALUATE_PROMPT = (question, answer, context) => `Evaluate this technical interview answer. Respond with ONLY valid JSON — no markdown.
+
+CODE CONTEXT:
+${context.substring(0, 800)}
+
+QUESTION: ${question}
+ANSWER: ${answer}
+
+Respond with exactly this JSON structure:
+{"score":1,"feedback":"...","correct":"...","missed":"..."}
+
+score: 1=incorrect 2=partial 3=adequate 4=good 5=excellent
+feedback: 2-3 sentence overall evaluation
+correct: what they got right (or "N/A")
+missed: what they missed or could improve (or "N/A")
+
+JSON:`;
+
 function getExecutorPrompt(taskType, instruction, context) {
-  const shortContext = context.substring(0, 1000);
-  
+  const code = context.substring(0, 3000);
+
   switch (taskType) {
     case 'test':
-      return `Generate unit tests for this code:\n\n${shortContext}`;
+      return `Generate comprehensive unit tests for this code:\n\n${code}`;
     case 'documentation':
-      return `Add JSDoc documentation to this code:\n\n${shortContext}`;
-    case 'review':
-      return `Explain and review this code:\n\n${shortContext}`;
+      return `Add complete JSDoc documentation to this code:\n\n${code}`;
+    case 'explain':
+      return `Explain this code clearly — what it does, how it works, key functions, data flow, and notable design decisions:\n\n${code}`;
+    case 'bugs':
+      return `Find all bugs and potential problems in this code. For each issue provide: description, severity (critical/high/medium/low), and the corrected code:\n\n${code}`;
+    case 'security':
+      return `Perform a security analysis of this code. Identify vulnerabilities, assess severity (critical/high/medium/low), and provide the fix for each:\n\n${code}`;
+    case 'feedback':
+      return `Review this code and provide structured feedback covering: code quality, potential issues, security concerns, performance, and concrete recommendations:\n\n${code}`;
     case 'fix':
-      return `Fix issues in this code:\n\n${shortContext}`;
+      return `Fix all issues in this code and explain what was wrong and why:\n\n${code}`;
     default:
-      return `${instruction}\n\nCode:\n${shortContext}`;
+      return `${instruction}\n\nCode:\n${code}`;
   }
 }
 // ============================================================================
@@ -621,8 +657,9 @@ module.exports = {
   DOCUMENTATION_PROMPT,
   CODE_GENERATION_PROMPT,
   CODE_REVIEW_PROMPT,
+  INTERVIEW_GENERATE_PROMPT,
+  INTERVIEW_EVALUATE_PROMPT,
   getExecutorPrompt,
-  // Keep old export for backward compatibility
   EXECUTOR_PROMPT: CODE_GENERATION_PROMPT,
 };
 

@@ -9,6 +9,14 @@ marked.setOptions({
   gfm: true,
 });
 
+const apiModal      = document.getElementById('apiModal');
+const apiUrlInput   = document.getElementById('apiUrl');
+const apiKeyInput   = document.getElementById('apiKey');
+const toggleKeyBtn  = document.getElementById('toggleKey');
+const connectBtn    = document.getElementById('connectBtn');
+const skipBtn       = document.getElementById('skipBtn');
+const modalError    = document.getElementById('modalError');
+
 const messagesEl    = document.getElementById('messages');
 const chatInput     = document.getElementById('chatInput');
 const sendBtn       = document.getElementById('sendBtn');
@@ -21,6 +29,8 @@ const clearBtn      = document.getElementById('clearBtn');
 const sidebarToggle = document.getElementById('sidebarToggle');
 const sidebar       = document.getElementById('sidebar');
 const welcomeTime   = document.getElementById('welcomeTime');
+const chatPanel     = document.getElementById('chatPanel');
+const interviewPanel = document.getElementById('interviewPanel');
 
 function now() {
   return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -161,21 +171,292 @@ async function checkStatus() {
   try {
     const res = await fetch('/api/status');
     const data = await res.json();
+    const isApi = data.mode === 'api';
 
-    statusPill.className = 'status-pill ' + (data.mode === 'api' ? 'online' : 'mock');
-    statusLabel.textContent = data.mode === 'api' ? 'API mode' : 'Mock mode';
+    statusPill.className = 'status-pill ' + (isApi ? 'online' : 'mock');
+    statusLabel.textContent = isApi ? 'API mode' : 'Mock mode';
 
-    modeBadge.textContent = data.mode === 'api' ? 'API' : 'Mock';
-    modeBadge.style.background = data.mode === 'api' ? 'rgba(63, 185, 80, 0.12)' : 'rgba(227, 179, 65, 0.12)';
-    modeBadge.style.color = data.mode === 'api' ? 'var(--green)' : 'var(--orange)';
-    modeBadge.style.borderColor = data.mode === 'api' ? 'rgba(63, 185, 80, 0.3)' : 'rgba(227, 179, 65, 0.3)';
+    modeBadge.textContent = isApi ? 'API' : 'Mock';
+    modeBadge.style.background = isApi ? 'rgba(63, 185, 80, 0.12)' : 'rgba(227, 179, 65, 0.12)';
+    modeBadge.style.color = isApi ? 'var(--green)' : 'var(--orange)';
+    modeBadge.style.borderColor = isApi ? 'rgba(63, 185, 80, 0.3)' : 'rgba(227, 179, 65, 0.3)';
 
     nodeBadge.textContent = data.nodeVersion || 'Node';
+
+    if (!isApi) {
+      apiModal.classList.remove('modal-hidden');
+    }
   } catch {
     statusPill.className = 'status-pill error';
     statusLabel.textContent = 'Offline';
   }
 }
+
+function setModalError(msg) {
+  modalError.textContent = msg;
+  modalError.classList.toggle('modal-hidden', !msg);
+}
+
+let currentMode = 'chat';
+
+function switchMode(mode) {
+  currentMode = mode;
+  document.querySelectorAll('.mode-tab').forEach(t => t.classList.toggle('active', t.dataset.mode === mode));
+  chatPanel.classList.toggle('panel-hidden', mode !== 'chat');
+  interviewPanel.classList.toggle('panel-hidden', mode !== 'interview');
+}
+
+const ivState = {
+  history: [],
+  total: 0,
+  currentIndex: 0,
+};
+
+function showIvScreen(screenId) {
+  ['ivStart', 'ivActive', 'ivDone'].forEach(id => {
+    document.getElementById(id).classList.toggle('panel-hidden', id !== screenId);
+  });
+}
+
+function scoreClass(score) {
+  if (score <= 2) return 'score-low';
+  if (score === 3) return 'score-mid';
+  return 'score-high';
+}
+
+function renderHistory() {
+  const container = document.getElementById('ivHistory');
+  container.innerHTML = '';
+
+  let totalScore = 0;
+  ivState.history.forEach((item, i) => {
+    const s = item.evaluation.score || 0;
+    totalScore += s;
+
+    const el = document.createElement('div');
+    el.className = 'iv-history-item';
+
+    const hdr = document.createElement('div');
+    hdr.className = 'iv-history-header';
+
+    const qtext = document.createElement('span');
+    qtext.className = 'iv-history-qtext';
+    qtext.textContent = `Q${i + 1}. ${item.question}`;
+
+    const badge = document.createElement('span');
+    badge.className = `iv-score-badge ${scoreClass(s)}`;
+    badge.textContent = `${s}/5`;
+
+    hdr.appendChild(qtext);
+    hdr.appendChild(badge);
+
+    const ans = document.createElement('div');
+    ans.className = 'iv-history-answer';
+    ans.textContent = item.answer;
+
+    const evalDiv = document.createElement('div');
+    evalDiv.className = 'iv-history-eval';
+
+    if (item.evaluation.feedback) {
+      const fb = document.createElement('p');
+      fb.className = 'iv-eval-feedback';
+      fb.textContent = item.evaluation.feedback;
+      evalDiv.appendChild(fb);
+    }
+    if (item.evaluation.correct && item.evaluation.correct !== 'N/A') {
+      const cr = document.createElement('p');
+      cr.className = 'iv-eval-correct';
+      cr.innerHTML = `<strong>Correct:</strong> ${item.evaluation.correct}`;
+      evalDiv.appendChild(cr);
+    }
+    if (item.evaluation.missed && item.evaluation.missed !== 'N/A') {
+      const ms = document.createElement('p');
+      ms.className = 'iv-eval-missed';
+      ms.innerHTML = `<strong>Missed:</strong> ${item.evaluation.missed}`;
+      evalDiv.appendChild(ms);
+    }
+
+    el.appendChild(hdr);
+    el.appendChild(ans);
+    el.appendChild(evalDiv);
+    container.appendChild(el);
+  });
+
+  const avg = ivState.history.length > 0
+    ? (totalScore / ivState.history.length).toFixed(1)
+    : '0.0';
+  document.getElementById('ivScoreSummary').textContent = `Average score: ${avg} / 5`;
+}
+
+async function startInterview() {
+  const code = document.getElementById('ivCode').value.trim();
+  const target = document.getElementById('ivTarget').value.trim();
+  const errorEl = document.getElementById('ivStartError');
+
+  if (!code) {
+    errorEl.textContent = 'Please paste some code to start the interview.';
+    errorEl.classList.remove('panel-hidden');
+    return;
+  }
+
+  errorEl.classList.add('panel-hidden');
+  const startBtn = document.getElementById('ivStartBtn');
+  startBtn.disabled = true;
+  startBtn.textContent = 'Generating questions…';
+
+  try {
+    const res = await fetch('/api/interview/start', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code, target }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok || data.error) {
+      errorEl.textContent = data.error || 'Failed to start interview.';
+      errorEl.classList.remove('panel-hidden');
+      return;
+    }
+
+    ivState.history = [];
+    ivState.total = data.total;
+    ivState.currentIndex = 0;
+
+    showQuestion(data.question, 0, data.total);
+    showIvScreen('ivActive');
+  } catch (err) {
+    errorEl.textContent = `Error: ${err.message}`;
+    errorEl.classList.remove('panel-hidden');
+  } finally {
+    startBtn.disabled = false;
+    startBtn.textContent = 'Start Interview';
+  }
+}
+
+function showQuestion(question, index, total) {
+  document.getElementById('ivQLabel').textContent = `Question ${index + 1} of ${total}`;
+  document.getElementById('ivQuestionBox').textContent = question.question;
+  document.getElementById('ivAnswer').value = '';
+  document.getElementById('ivProgressFill').style.width = `${(index / total) * 100}%`;
+  document.getElementById('ivAnswerError').classList.add('panel-hidden');
+}
+
+async function submitAnswer() {
+  const answer = document.getElementById('ivAnswer').value.trim();
+  const errorEl = document.getElementById('ivAnswerError');
+
+  if (!answer) {
+    errorEl.textContent = 'Please type an answer before submitting.';
+    errorEl.classList.remove('panel-hidden');
+    return;
+  }
+
+  errorEl.classList.add('panel-hidden');
+  const submitBtn = document.getElementById('ivSubmitBtn');
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Evaluating…';
+
+  try {
+    const currentQuestion = document.getElementById('ivQuestionBox').textContent;
+
+    const res = await fetch('/api/interview/answer', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ answer }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok || data.error) {
+      errorEl.textContent = data.error || 'Failed to evaluate answer.';
+      errorEl.classList.remove('panel-hidden');
+      return;
+    }
+
+    ivState.history.push({
+      question: currentQuestion,
+      answer,
+      evaluation: data.evaluation,
+    });
+
+    ivState.currentIndex = data.nextIndex;
+
+    if (data.done) {
+      document.getElementById('ivProgressFill').style.width = '100%';
+      renderHistory();
+      showIvScreen('ivDone');
+    } else {
+      showQuestion(data.nextQuestion, data.nextIndex, ivState.total);
+    }
+  } catch (err) {
+    errorEl.textContent = `Error: ${err.message}`;
+    errorEl.classList.remove('panel-hidden');
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Submit Answer';
+  }
+}
+
+async function resetInterview() {
+  try { await fetch('/api/interview/reset', { method: 'POST' }); } catch {}
+  ivState.history = [];
+  ivState.currentIndex = 0;
+  ivState.total = 0;
+  document.getElementById('ivCode').value = '';
+  document.getElementById('ivTarget').value = '';
+  document.getElementById('ivStartError').classList.add('panel-hidden');
+  showIvScreen('ivStart');
+}
+
+toggleKeyBtn.addEventListener('click', () => {
+  const isPassword = apiKeyInput.type === 'password';
+  apiKeyInput.type = isPassword ? 'text' : 'password';
+  toggleKeyBtn.textContent = isPassword ? 'Hide' : 'Show';
+});
+
+skipBtn.addEventListener('click', () => {
+  apiModal.classList.add('modal-hidden');
+});
+
+connectBtn.addEventListener('click', async () => {
+  const apiUrl = apiUrlInput.value.trim();
+  const apiKey = apiKeyInput.value.trim();
+
+  setModalError('');
+
+  if (!apiUrl || !apiKey) {
+    setModalError('Both fields are required.');
+    return;
+  }
+
+  connectBtn.disabled = true;
+  connectBtn.textContent = 'Connecting…';
+
+  try {
+    const res = await fetch('/api/config', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ apiUrl, apiKey }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok || data.error) {
+      setModalError(data.error || 'Configuration failed.');
+      connectBtn.disabled = false;
+      connectBtn.textContent = 'Connect';
+      return;
+    }
+
+    await checkStatus();
+    apiModal.classList.add('modal-hidden');
+  } catch (err) {
+    setModalError(`Connection error: ${err.message}`);
+    connectBtn.disabled = false;
+    connectBtn.textContent = 'Connect';
+  }
+});
 
 chatInput.addEventListener('keydown', e => {
   if (e.key === 'Enter' && !e.shiftKey) {
@@ -230,6 +511,15 @@ document.addEventListener('click', e => {
     sidebar.classList.remove('open');
   }
 });
+
+document.querySelectorAll('.mode-tab').forEach(tab => {
+  tab.addEventListener('click', () => switchMode(tab.dataset.mode));
+});
+
+document.getElementById('ivStartBtn').addEventListener('click', startInterview);
+document.getElementById('ivSubmitBtn').addEventListener('click', submitAnswer);
+document.getElementById('ivResetBtn').addEventListener('click', resetInterview);
+document.getElementById('ivRetryBtn').addEventListener('click', resetInterview);
 
 welcomeTime.textContent = now();
 checkStatus();

@@ -1,70 +1,43 @@
 require('dotenv').config();
+const logger = require('./config/logger');
 const { startCLI } = require('./cli/interface');
 
-/**
- * Global error handler for unhandled promise rejections
- */
 process.on('unhandledRejection', (reason, promise) => {
-  console.error('\n[ERROR] Unhandled Promise Rejection:');
-  console.error('Reason:', reason);
-  console.error('Promise:', promise);
-
-  if (reason instanceof Error) {
-    console.error('Stack:', reason.stack);
-  }
-
-  console.error('\n[FATAL] Application will exit due to unhandled rejection');
+  logger.error('Unhandled Promise Rejection');
+  logger.error(`Reason: ${reason}`);
+  if (reason instanceof Error) logger.error(reason.stack);
   process.exit(1);
 });
 
-/**
- * Global error handler for uncaught exceptions
- */
 process.on('uncaughtException', (error) => {
-  console.error('\n[ERROR] Uncaught Exception:');
-  console.error('Error:', error.message);
-  console.error('Stack:', error.stack);
-
-  console.error('\n[FATAL] Application will exit due to uncaught exception');
+  logger.error(`Uncaught Exception: ${error.message}`);
+  logger.error(error.stack);
   process.exit(1);
 });
 
-/**
- * Handle graceful shutdown on SIGTERM
- */
 process.on('SIGTERM', () => {
-  console.log('\n[SIGTERM] Shutting down gracefully...');
+  logger.info('[SIGTERM] Shutting down gracefully...');
   process.exit(0);
 });
 
-/**
- * Handle graceful shutdown on SIGINT (Ctrl+C)
- */
 process.on('SIGINT', () => {
-  console.log('\n\nShutting down gracefully...');
+  logger.info('Shutting down gracefully...');
   process.exit(0);
 });
 
-/**
- * Log startup information
- */
-console.log('Bob Agent starting...');
-console.log(`  dir  : ${process.cwd()}`);
-console.log(`  node : ${process.version}`);
-console.log(`  env  : ${process.env.NODE_ENV || 'development'}`);
+logger.info('Bob Agent starting...');
+logger.info(`dir  : ${process.cwd()}`);
+logger.info(`node : ${process.version}`);
+logger.info(`env  : ${process.env.NODE_ENV || 'development'}`);
 
-// Validate environment variables
 if (!process.env.BOB_API_URL && !process.env.BOB_API_KEY) {
-  console.warn('  [warn] No API credentials found — running in mock mode');
-  console.warn('         Set BOB_API_URL and BOB_API_KEY in .env for full functionality');
+  logger.warn('No API credentials found — running in mock mode');
+  logger.warn('Set BOB_API_URL and BOB_API_KEY in .env for full functionality');
 }
 
-console.log('');
-
-// Start the CLI
 try {
   startCLI();
 } catch (error) {
-  console.error('[ERROR] Failed to start CLI:', error.message);
+  logger.error(`Failed to start CLI: ${error.message}`);
   process.exit(1);
 }

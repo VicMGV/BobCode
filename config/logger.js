@@ -1,0 +1,42 @@
+const { createLogger, format, transports } = require('winston');
+const fs = require('fs');
+const path = require('path');
+
+const logsDir = path.join(process.cwd(), 'logs');
+if (!fs.existsSync(logsDir)) {
+  fs.mkdirSync(logsDir, { recursive: true });
+}
+
+const fileFormat = format.combine(
+  format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+  format.errors({ stack: true }),
+  format.printf(({ timestamp, level, message, stack }) =>
+    stack
+      ? `${timestamp} [${level.toUpperCase()}] ${message}\n${stack}`
+      : `${timestamp} [${level.toUpperCase()}] ${message}`
+  )
+);
+
+const consoleFormat = format.combine(
+  format.colorize({ level: true }),
+  format.timestamp({ format: 'HH:mm:ss' }),
+  format.printf(({ timestamp, level, message }) => `${timestamp} ${level} ${message}`)
+);
+
+const logger = createLogger({
+  level: process.env.LOG_LEVEL || 'info',
+  transports: [
+    new transports.Console({ format: consoleFormat }),
+    new transports.File({
+      filename: path.join(logsDir, 'error.log'),
+      level: 'error',
+      format: fileFormat,
+    }),
+    new transports.File({
+      filename: path.join(logsDir, 'combined.log'),
+      format: fileFormat,
+    }),
+  ],
+});
+
+module.exports = logger;
