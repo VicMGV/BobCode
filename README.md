@@ -34,7 +34,7 @@ An intelligent CLI agent powered by IBM Bob that helps you generate tests, docum
 ### Prerequisites
 
 - Node.js >= 16.0.0
-- npm or yarn
+- pnpm
 - IBM Bob API credentials (optional - works in mock mode without)
 
 ### Steps
@@ -47,7 +47,7 @@ An intelligent CLI agent powered by IBM Bob that helps you generate tests, docum
 
 2. **Install dependencies**
    ```bash
-   npm install
+   pnpm install
    ```
 
 3. **Configure environment variables**
@@ -58,14 +58,14 @@ An intelligent CLI agent powered by IBM Bob that helps you generate tests, docum
 
 4. **Start the agent**
    ```bash
-   npm start
+   pnpm start
    ```
 
 ## ⚡ Quick Start
 
 ```bash
 # Start the interactive CLI
-npm start
+pnpm start
 
 # Example commands:
 > generate tests for index.js
@@ -232,28 +232,28 @@ bob-agent/
 
 ```bash
 # Install dependencies
-npm install
+pnpm install
 
 # Run in development mode with auto-reload
-npm run dev
+pnpm dev
 
 # Run tests
-npm test
+pnpm test
 
 # Run tests with coverage
-npm run test:coverage
+pnpm test:coverage
 
 # Watch mode for tests
-npm run test:watch
+pnpm test:watch
 ```
 
 ### Project Scripts
 
-- `npm start` - Start the CLI agent
-- `npm run dev` - Development mode with auto-reload
-- `npm test` - Run test suite
-- `npm run test:coverage` - Generate coverage report
-- `npm run test:watch` - Watch mode for tests
+- `pnpm start` - Start the CLI agent
+- `pnpm dev` - Development mode with auto-reload
+- `pnpm test` - Run test suite
+- `pnpm test:coverage` - Generate coverage report
+- `pnpm test:watch` - Watch mode for tests
 
 ## 🧪 Testing
 
@@ -261,13 +261,13 @@ npm run test:watch
 
 ```bash
 # Run all tests
-npm test
+pnpm test
 
 # Run with coverage
-npm run test:coverage
+pnpm test:coverage
 
 # Watch mode
-npm run test:watch
+pnpm test:watch
 ```
 
 ### Test Coverage
@@ -322,7 +322,7 @@ describe('MyFunction', () => {
 Enable detailed logging:
 
 ```bash
-LOG_LEVEL=debug npm start
+LOG_LEVEL=debug pnpm start
 ```
 
 ## 🤝 Contributing
@@ -335,7 +335,7 @@ Contributions are welcome! Please read our [Contributing Guidelines](CONTRIBUTIN
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
 3. Make your changes
 4. Add tests for new functionality
-5. Ensure all tests pass (`npm test`)
+5. Ensure all tests pass (`pnpm test`)
 6. Commit your changes (`git commit -m 'Add amazing feature'`)
 7. Push to the branch (`git push origin feature/amazing-feature`)
 8. Open a Pull Request

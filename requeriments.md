@@ -1,8 +1,8 @@
 
-npm install dotenv
+pnpm install dotenv
 
-npm install dotenv winston joi axios validator
+pnpm install dotenv winston joi axios validator
 
-npm install --save-dev eslint prettier husky lint-staged jest supertest
+pnpm install --save-dev eslint prettier husky lint-staged jest supertest
 
-npm list --depth=0
+pnpm list --depth=0

@@ -95,7 +95,7 @@ describe('agent.js - runAgent', () => {
       const userInput = 'Run tests';
       const mockPlan = {
         tool: 'run_command',
-        target: 'npm test',
+        target: 'pnpm test',
         instruction: userInput,
         taskType: 'test'
       };
@@ -253,10 +253,10 @@ describe('agent.js - runAgent', () => {
 
     it('should handle run_command tool', async () => {
       // Arrange
-      const userInput = 'Run npm test';
+      const userInput = 'Run pnpm test';
       const mockPlan = {
         tool: 'run_command',
-        target: 'npm test',
+        target: 'pnpm test',
         instruction: userInput,
         taskType: 'test'
       };
@@ -612,10 +612,10 @@ describe('agent.js - runAgent', () => {
 
     it('should handle complete workflow for command execution', async () => {
       // Arrange
-      const userInput = 'Run npm test';
+      const userInput = 'Run pnpm test';
       const mockPlan = {
         tool: 'run_command',
-        target: 'npm test',
+        target: 'pnpm test',
         instruction: userInput,
         taskType: 'test'
       };

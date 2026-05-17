@@ -5,10 +5,11 @@ const { execSync } = require('child_process');
  * Only these commands can be executed by the agent
  */
 const ALLOWED_COMMANDS = [
-  'npm test',
-  'npm run',
-  'npm install',
-  'npm ci',
+  'pnpm test',
+  'pnpm run',
+  'pnpm install',
+  'pnpm add',
+  'pnpm exec',
   'node',
   'git status',
   'git log',

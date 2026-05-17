@@ -33,8 +33,8 @@ async function planAction(userInput) {
     return { tool: 'list_files', target: '.', instruction: cleaned, taskType: 'code' };
   }
 
-  if (lower.includes('run') || lower.includes('npm') || lower.includes('execute')) {
-    const command = lower.replace('run', '').trim() || 'npm test';
+  if (lower.includes('run') || lower.includes('pnpm') || lower.includes('execute')) {
+    const command = lower.replace('run', '').trim() || 'pnpm test';
     return { tool: 'run_command', target: command.trim(), instruction: cleaned, taskType: 'code' };
   }
 

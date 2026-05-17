@@ -11,7 +11,7 @@ AVAILABLE TOOLS:
 1. read_file - Read file contents to understand existing code
 2. write_file - Create new files or modify existing ones
 3. list_files - View project structure and discover files
-4. run_command - Execute shell commands (npm test, git commands, etc.)
+4. run_command - Execute shell commands (pnpm test, git commands, etc.)
 
 TASK TYPE DETECTION:
 Identify the primary intent from these categories:
@@ -62,7 +62,7 @@ Input: "Create a new authentication module"
 Output: {"tool":"list_files","target":".","instruction":"View project structure to create authentication module","taskType":"code"}
 
 Input: "Run the test suite"
-Output: {"tool":"run_command","target":"npm test","instruction":"Execute the test suite","taskType":"test"}
+Output: {"tool":"run_command","target":"pnpm test","instruction":"Execute the test suite","taskType":"test"}
 
 Now analyze the user's instruction and respond with the appropriate JSON.
 `;
@@ -247,7 +247,7 @@ Brief description of what the project does
 
 ## Installation
 \`\`\`bash
-npm install
+pnpm install
 \`\`\`
 
 ## Usage
@@ -273,7 +273,7 @@ const result = functionName('value1', 'value2');
 
 ## Testing
 \`\`\`bash
-npm test
+pnpm test
 \`\`\`
 
 ## License

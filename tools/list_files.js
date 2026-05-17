@@ -54,7 +54,7 @@ function validatePath(target) {
  */
 async function walk(dir, depth = 0) {
   if (depth > MAX_DEPTH) {
-    return '  '.repeat(depth) + '⚠️  [Max depth reached]\n';
+    return '  '.repeat(depth) + '[max depth reached]\n';
   }
 
   let result = '';
@@ -72,10 +72,9 @@ async function walk(dir, depth = 0) {
         const stats = await fs.stat(fullPath);
         const isDir = stats.isDirectory();
 
-        // Format output with indentation and icons
         const indent = '  '.repeat(depth);
-        const icon = isDir ? '📁' : '📄';
-        result += `${indent}${icon} ${item}\n`;
+        const prefix = isDir ? '+' : '-';
+        result += `${indent}${prefix} ${item}\n`;
 
         // Recursively walk subdirectories
         if (isDir) {
@@ -83,7 +82,7 @@ async function walk(dir, depth = 0) {
         }
       } catch (err) {
         // Skip items that can't be accessed
-        result += '  '.repeat(depth) + `⚠️  ${item} (access denied)\n`;
+        result += '  '.repeat(depth) + `! ${item} (access denied)\n`;
       }
     }
   } catch (err) {
