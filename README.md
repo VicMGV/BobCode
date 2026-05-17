@@ -41,8 +41,8 @@ An intelligent CLI agent powered by IBM Bob that helps you generate tests, docum
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/bob-agent.git
-   cd bob-agent
+   git clone https://github.com/VicMGV/BobCode.git
+   cd BobCode
    ```
 
 2. **Install dependencies**
@@ -373,5 +373,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [ ] Cloud deployment options
 
 ---
-
-**Made with ❤️ by the Bob Agent Team**
