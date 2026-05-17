@@ -97,7 +97,7 @@ Comprehensive review of the Bob Agent CLI project for production deployment read
 **Missing:** Logging library, validation library, HTTP client with retry, security utilities
 
 #### 7.2 No Dependency Scanning
-**Fix:** npm audit in CI/CD, Snyk/Dependabot, regular updates
+**Fix:** pnpm audit in CI/CD, Snyk/Dependabot, regular updates
 
 ### 8. Performance
 
@@ -291,7 +291,7 @@ The Bob Agent project has a solid foundation but requires significant security h
 
 ## Recommended Tools
 
-- **Security:** Snyk, npm audit, OWASP dependency check
+- **Security:** Snyk, pnpm audit, OWASP dependency check
 - **Logging:** Winston, Pino
 - **Monitoring:** Prometheus, Grafana, DataDog
 - **Testing:** Jest, Supertest, Artillery
