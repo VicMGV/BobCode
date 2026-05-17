@@ -5,6 +5,7 @@ const logger = require('./config/logger');
 const { runAgent } = require('./agent/agent');
 const { askBob } = require('./bob/client');
 const { INTERVIEW_GENERATE_PROMPT, INTERVIEW_EVALUATE_PROMPT } = require('./bob/prompts');
+const { run: fetchGithub, parseGithubUrl } = require('./tools/fetch_github');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -72,6 +73,26 @@ app.post('/api/chat', async (req, res) => {
     res.json({ result });
   } catch (error) {
     logger.error(`Chat error: ${error.message}`);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post('/api/fetch-github', async (req, res) => {
+  const { url } = req.body;
+  if (!url || typeof url !== 'string' || !url.trim()) {
+    return res.status(400).json({ error: 'URL is required' });
+  }
+
+  const parsed = parseGithubUrl(url.trim());
+  if (!parsed) {
+    return res.status(400).json({ error: 'Invalid GitHub URL. Supported: github.com/owner/repo, github.com/owner/repo/blob/branch/file, raw.githubusercontent.com/...' });
+  }
+
+  try {
+    const content = await fetchGithub(url.trim());
+    res.json({ content });
+  } catch (error) {
+    logger.error(`GitHub fetch error: ${error.message}`);
     res.status(500).json({ error: error.message });
   }
 });

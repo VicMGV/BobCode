@@ -398,6 +398,48 @@ async function submitAnswer() {
   }
 }
 
+async function fetchGithubCode() {
+  const url = document.getElementById('ivGithubUrl').value.trim();
+  const errorEl = document.getElementById('ivStartError');
+
+  if (!url) {
+    errorEl.textContent = 'Please enter a GitHub URL first.';
+    errorEl.classList.remove('panel-hidden');
+    return;
+  }
+
+  errorEl.classList.add('panel-hidden');
+  const fetchBtn = document.getElementById('ivFetchBtn');
+  fetchBtn.disabled = true;
+  fetchBtn.textContent = 'Fetching…';
+
+  try {
+    const res = await fetch('/api/fetch-github', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok || data.error) {
+      errorEl.textContent = data.error || 'Failed to fetch GitHub content.';
+      errorEl.classList.remove('panel-hidden');
+      return;
+    }
+
+    document.getElementById('ivCode').value = data.content;
+    const label = url.replace(/^https?:\/\/(?:github\.com|raw\.githubusercontent\.com)\//, '');
+    document.getElementById('ivTarget').value = label;
+  } catch (err) {
+    errorEl.textContent = `Error: ${err.message}`;
+    errorEl.classList.remove('panel-hidden');
+  } finally {
+    fetchBtn.disabled = false;
+    fetchBtn.textContent = 'Fetch';
+  }
+}
+
 async function resetInterview() {
   try { await fetch('/api/interview/reset', { method: 'POST' }); } catch {}
   ivState.history = [];
@@ -516,10 +558,15 @@ document.querySelectorAll('.mode-tab').forEach(tab => {
   tab.addEventListener('click', () => switchMode(tab.dataset.mode));
 });
 
+document.getElementById('ivFetchBtn').addEventListener('click', fetchGithubCode);
 document.getElementById('ivStartBtn').addEventListener('click', startInterview);
 document.getElementById('ivSubmitBtn').addEventListener('click', submitAnswer);
 document.getElementById('ivResetBtn').addEventListener('click', resetInterview);
 document.getElementById('ivRetryBtn').addEventListener('click', resetInterview);
+
+document.getElementById('ivGithubUrl').addEventListener('keydown', e => {
+  if (e.key === 'Enter') { e.preventDefault(); fetchGithubCode(); }
+});
 
 welcomeTime.textContent = now();
 checkStatus();

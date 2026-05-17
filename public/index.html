@@ -137,8 +137,9 @@
                   <li><strong>Find bugs</strong> — <code>find bugs in executor.js</code></li>
                   <li><strong>Security audit</strong> — <code>security check bob/client.js</code></li>
                   <li><strong>Generate tests</strong> — <code>generate tests for agent.js</code></li>
+                  <li><strong>GitHub repos</strong> — paste any <code>github.com/owner/repo/blob/…</code> URL</li>
                 </ul>
-                <p>Switch to <strong>Interview</strong> mode to get interrogated on any code you paste.</p>
+                <p>Switch to <strong>Interview</strong> mode to get interrogated on any code — paste it or load it from a GitHub URL.</p>
               </div>
             </div>
           </div>
@@ -178,14 +179,22 @@
         <div class="iv-screen" id="ivStart">
           <div class="iv-start-inner">
             <h2 class="iv-title">Code Interview</h2>
-            <p class="iv-subtitle">Paste your code below. Bob will generate 6 interview questions to test your deep understanding of the code.</p>
+            <p class="iv-subtitle">Load code from a GitHub URL or paste it directly. Bob will generate 6 interview questions to test your deep understanding.</p>
             <div class="iv-field">
-              <label class="iv-label" for="ivTarget">File path (optional)</label>
-              <input class="field-input" type="text" id="ivTarget" placeholder="e.g. agent/agent.js" autocomplete="off" spellcheck="false" />
+              <label class="iv-label" for="ivGithubUrl">Load from GitHub</label>
+              <div class="iv-url-row">
+                <input class="field-input" type="url" id="ivGithubUrl" placeholder="https://github.com/owner/repo/blob/main/file.js" autocomplete="off" spellcheck="false" />
+                <button class="btn-iv-fetch" id="ivFetchBtn" type="button">Fetch</button>
+              </div>
+              <span class="iv-fetch-hint">Supports file, directory, and repo URLs. Also works with raw.githubusercontent.com links.</span>
             </div>
             <div class="iv-field">
-              <label class="iv-label" for="ivCode">Code to review</label>
-              <textarea class="iv-code-input" id="ivCode" placeholder="Paste your code here…" rows="10" spellcheck="false"></textarea>
+              <label class="iv-label" for="ivCode">Code</label>
+              <textarea class="iv-code-input" id="ivCode" placeholder="Paste your code here, or use Fetch above to load it from GitHub…" rows="10" spellcheck="false"></textarea>
+            </div>
+            <div class="iv-field">
+              <label class="iv-label" for="ivTarget">Label (optional)</label>
+              <input class="field-input" type="text" id="ivTarget" placeholder="e.g. agent/agent.js or github.com/org/repo" autocomplete="off" spellcheck="false" />
             </div>
             <p class="iv-error panel-hidden" id="ivStartError"></p>
             <button class="btn-start-iv" id="ivStartBtn">Start Interview</button>

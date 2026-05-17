@@ -1073,6 +1073,44 @@ body {
   line-height: 1.4;
 }
 
+.iv-url-row {
+  display: flex;
+  gap: 8px;
+}
+.iv-url-row .field-input { flex: 1; }
+
+.btn-iv-fetch {
+  padding: 0 18px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background var(--transition), color var(--transition), border-color var(--transition);
+  font-family: var(--font-sans);
+  flex-shrink: 0;
+}
+.btn-iv-fetch:hover {
+  background: var(--accent-dim);
+  border-color: var(--accent-dim);
+  color: #fff;
+}
+.btn-iv-fetch:disabled {
+  background: var(--bg-elevated);
+  color: var(--text-muted);
+  border-color: var(--border);
+  cursor: not-allowed;
+}
+
+.iv-fetch-hint {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
 @media (max-width: 700px) {
   .sidebar {
     position: fixed;

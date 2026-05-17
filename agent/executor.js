@@ -5,12 +5,14 @@ const readFile = require('../tools/read_file');
 const writeFile = require('../tools/write_file');
 const listFiles = require('../tools/list_files');
 const runCommand = require('../tools/run_command');
+const fetchGithub = require('../tools/fetch_github');
 
 const TOOLS = {
   read_file: readFile,
   write_file: writeFile,
   list_files: listFiles,
   run_command: runCommand,
+  fetch_github: fetchGithub,
 };
 
 async function execute(plan) {

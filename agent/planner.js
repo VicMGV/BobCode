@@ -4,9 +4,24 @@ function extractTarget(lower, removePatterns) {
   return s.trim().split(/\s+/).find(w => w.length > 1) || '.';
 }
 
+function detectTaskType(lower) {
+  if (lower.includes('test')) return 'test';
+  if (lower.includes('explain') || lower.includes('what') || lower.includes('how')) return 'explain';
+  if (lower.includes('bug') || lower.includes('bugs')) return 'bugs';
+  if (lower.includes('security') || lower.includes('vulnerab')) return 'security';
+  if (lower.includes('doc') || lower.includes('jsdoc')) return 'documentation';
+  return 'feedback';
+}
+
 async function planAction(userInput) {
   const cleaned = userInput.replace(/^[>\s]+/, '').trim();
   const lower = cleaned.toLowerCase();
+
+  const githubRe = /https?:\/\/(?:github\.com|raw\.githubusercontent\.com)\/\S+/;
+  const githubMatch = cleaned.match(githubRe);
+  if (githubMatch) {
+    return { tool: 'fetch_github', target: githubMatch[0], instruction: cleaned, taskType: detectTaskType(lower) };
+  }
 
   if (lower.includes('test') || lower.includes('tests')) {
     const target = extractTarget(lower, ['generate tests for', 'generate test for', 'tests', 'test']);
