@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BobCode — AI Coding Assistant</title>
+  <script src="https://cdn.jsdelivr.net/npm/marked@12/marked.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11/styles/github-dark.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/highlight.js@11/lib/highlight.min.js"></script>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="logo">
+          <svg class="logo-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="4" y="4" width="10" height="10" rx="2"/>
+            <line x1="7" y1="4" x2="7" y2="1.5"/><line x1="11" y1="4" x2="11" y2="1.5"/>
+            <line x1="7" y1="14" x2="7" y2="16.5"/><line x1="11" y1="14" x2="11" y2="16.5"/>
+            <line x1="4" y1="7" x2="1.5" y2="7"/><line x1="4" y1="11" x2="1.5" y2="11"/>
+            <line x1="14" y1="7" x2="16.5" y2="7"/><line x1="14" y1="11" x2="16.5" y2="11"/>
+          </svg>
+          <span class="logo-text">BobCode</span>
+        </div>
+        <div class="status-pill" id="statusPill">
+          <span class="status-dot"></span>
+          <span class="status-label" id="statusLabel">Connecting…</span>
+        </div>
+      </div>
+
+      <section class="sidebar-section">
+        <h3 class="section-title">Quick Actions</h3>
+        <div class="action-grid">
+          <button class="action-btn" data-tpl="review the code in ">
+            <svg class="action-icon" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" aria-hidden="true">
+              <path d="M1 7c1.5-3 3.5-4.5 6-4.5S12.5 4 13 7c-1.5 3-3.5 4.5-6 4.5S2.5 10 1 7z"/>
+              <circle cx="7" cy="7" r="1.8"/>
+            </svg>
+            <span>Review</span>
+          </button>
+          <button class="action-btn" data-tpl="explain ">
+            <svg class="action-icon" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="7" cy="7" r="5.5"/>
+              <line x1="7" y1="6" x2="7" y2="10"/>
+              <circle cx="7" cy="4.5" r="0.5" fill="currentColor" stroke="none"/>
+            </svg>
+            <span>Explain</span>
+          </button>
+          <button class="action-btn" data-tpl="find bugs in ">
+            <svg class="action-icon" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M9.5 1a3 3 0 0 1-3 5L2 11a1.5 1.5 0 0 0 2 2l4.5-4.5a3 3 0 0 1 1-5.5z"/>
+            </svg>
+            <span>Bugs</span>
+          </button>
+          <button class="action-btn" data-tpl="security check ">
+            <svg class="action-icon" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M7 1.5L2 3.5v4c0 2.5 2 4.5 5 5 3-.5 5-2.5 5-5v-4L7 1.5z"/>
+            </svg>
+            <span>Security</span>
+          </button>
+          <button class="action-btn" data-tpl="generate tests for ">
+            <svg class="action-icon" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="2" y="2" width="10" height="10" rx="1.5"/>
+              <polyline points="4.5,7 6,8.5 9.5,5"/>
+            </svg>
+            <span>Tests</span>
+          </button>
+          <button class="action-btn" data-tpl="list files">
+            <svg class="action-icon" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M1 5h4l1.5-2H13v8H1z"/>
+            </svg>
+            <span>Files</span>
+          </button>
+        </div>
+      </section>
+
+      <section class="sidebar-section">
+        <h3 class="section-title">Examples</h3>
+        <ul class="example-list" id="examples">
+          <li class="example-item" data-msg="review the code in bob/client.js">Review bob/client.js</li>
+          <li class="example-item" data-msg="explain agent/planner.js">Explain planner.js</li>
+          <li class="example-item" data-msg="find bugs in agent/executor.js">Find bugs in executor.js</li>
+          <li class="example-item" data-msg="security check bob/client.js">Security check client.js</li>
+          <li class="example-item" data-msg="generate tests for agent/agent.js">Generate tests for agent.js</li>
+          <li class="example-item" data-msg="list files">Show project structure</li>
+        </ul>
+      </section>
+
+      <div class="sidebar-footer">
+        <button class="clear-btn" id="clearBtn" title="Clear conversation">
+          <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" width="13" height="13" aria-hidden="true">
+            <polyline points="2,3.5 12,3.5"/>
+            <path d="M5 3.5V2.5h4v1"/>
+            <rect x="3" y="3.5" width="8" height="9" rx="1"/>
+            <line x1="5.5" y1="6" x2="5.5" y2="10"/>
+            <line x1="8.5" y1="6" x2="8.5" y2="10"/>
+          </svg>
+          Clear chat
+        </button>
+      </div>
+    </aside>
+
+    <main class="chat-area">
+      <header class="topbar">
+        <button class="sidebar-toggle" id="sidebarToggle" title="Toggle sidebar">
+          <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" width="14" height="14" aria-hidden="true">
+            <line x1="1" y1="3.5" x2="13" y2="3.5"/>
+            <line x1="1" y1="7" x2="13" y2="7"/>
+            <line x1="1" y1="10.5" x2="13" y2="10.5"/>
+          </svg>
+        </button>
+        <div class="mode-toggle">
+          <button class="mode-tab active" data-mode="chat">Review</button>
+          <button class="mode-tab" data-mode="interview">Interview</button>
+        </div>
+        <div class="topbar-badges">
+          <span class="badge" id="modeBadge">Mock</span>
+          <span class="badge badge-node" id="nodeBadge">Node</span>
+        </div>
+      </header>
+
+      <div class="chat-panel" id="chatPanel">
+        <div class="messages" id="messages">
+          <div class="message bot-message" id="welcomeMsg">
+            <div class="message-avatar avatar-bot">B</div>
+            <div class="message-body">
+              <div class="message-header">
+                <span class="message-author">Bob Agent</span>
+                <span class="message-time" id="welcomeTime"></span>
+              </div>
+              <div class="message-content">
+                <p>I'm <strong>Bob</strong>, your AI code review assistant. I can:</p>
+                <ul>
+                  <li><strong>Review code</strong> — <code>review the code in bob/client.js</code></li>
+                  <li><strong>Explain code</strong> — <code>explain agent/planner.js</code></li>
+                  <li><strong>Find bugs</strong> — <code>find bugs in executor.js</code></li>
+                  <li><strong>Security audit</strong> — <code>security check bob/client.js</code></li>
+                  <li><strong>Generate tests</strong> — <code>generate tests for agent.js</code></li>
+                  <li><strong>GitHub repos</strong> — paste any <code>github.com/owner/repo/blob/…</code> URL</li>
+                </ul>
+                <p>Switch to <strong>Interview</strong> mode to get interrogated on any code — paste it or load it from a GitHub URL.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="typing-wrapper" id="typingWrapper" style="display:none;">
+          <div class="typing-indicator">
+            <div class="message-avatar avatar-bot">B</div>
+            <div class="typing-dots">
+              <span></span><span></span><span></span>
+            </div>
+            <span class="typing-label">Processing…</span>
+          </div>
+        </div>
+
+        <footer class="input-area">
+          <div class="input-wrapper">
+            <textarea
+              id="chatInput"
+              class="chat-input"
+              placeholder="Type your instruction… (Enter to send, Shift+Enter for new line)"
+              rows="1"
+              autocomplete="off"
+              spellcheck="false"
+            ></textarea>
+            <button class="send-btn" id="sendBtn" title="Send (Enter)">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16" aria-hidden="true">
+                <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+              </svg>
+            </button>
+          </div>
+          <p class="input-hint">Enter to send · Shift+Enter for new line</p>
+        </footer>
+      </div>
+
+      <div class="interview-panel panel-hidden" id="interviewPanel">
+        <div class="iv-screen" id="ivStart">
+          <div class="iv-start-inner">
+            <h2 class="iv-title">Code Interview</h2>
+            <p class="iv-subtitle">Load code from a GitHub URL or paste it directly. Bob will generate 6 interview questions to test your deep understanding.</p>
+            <div class="iv-field">
+              <label class="iv-label" for="ivGithubUrl">Load from GitHub</label>
+              <div class="iv-url-row">
+                <input class="field-input" type="url" id="ivGithubUrl" placeholder="https://github.com/owner/repo/blob/main/file.js" autocomplete="off" spellcheck="false" />
+                <button class="btn-iv-fetch" id="ivFetchBtn" type="button">Fetch</button>
+              </div>
+              <span class="iv-fetch-hint">Supports file, directory, and repo URLs. Also works with raw.githubusercontent.com links.</span>
+            </div>
+            <div class="iv-field">
+              <label class="iv-label" for="ivCode">Code</label>
+              <textarea class="iv-code-input" id="ivCode" placeholder="Paste your code here, or use Fetch above to load it from GitHub…" rows="10" spellcheck="false"></textarea>
+            </div>
+            <div class="iv-field">
+              <label class="iv-label" for="ivTarget">Label (optional)</label>
+              <input class="field-input" type="text" id="ivTarget" placeholder="e.g. agent/agent.js or github.com/org/repo" autocomplete="off" spellcheck="false" />
+            </div>
+            <p class="iv-error panel-hidden" id="ivStartError"></p>
+            <button class="btn-start-iv" id="ivStartBtn">Start Interview</button>
+          </div>
+        </div>
+
+        <div class="iv-screen panel-hidden" id="ivActive">
+          <div class="iv-progress-bar">
+            <div class="iv-progress-fill" id="ivProgressFill"></div>
+          </div>
+          <div class="iv-active-inner">
+            <div class="iv-question-meta">
+              <span class="iv-q-label" id="ivQLabel">Question 1 of 6</span>
+            </div>
+            <div class="iv-question-box" id="ivQuestionBox"></div>
+            <textarea class="iv-answer-input" id="ivAnswer" placeholder="Type your answer here…" rows="6" spellcheck="false"></textarea>
+            <p class="iv-error panel-hidden" id="ivAnswerError"></p>
+            <div class="iv-active-footer">
+              <button class="btn-iv-secondary" id="ivResetBtn">Restart</button>
+              <button class="btn-start-iv" id="ivSubmitBtn">Submit Answer</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="iv-screen panel-hidden" id="ivDone">
+          <div class="iv-done-inner">
+            <div class="iv-summary-header">
+              <h2 class="iv-title">Interview Complete</h2>
+              <div class="iv-score-total" id="ivScoreSummary"></div>
+            </div>
+            <div class="iv-history" id="ivHistory"></div>
+            <button class="btn-start-iv" id="ivRetryBtn">Start New Interview</button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div class="modal-overlay modal-hidden" id="apiModal">
+    <div class="modal">
+      <div class="modal-header">
+        <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="modal-logo" aria-hidden="true">
+          <rect x="4" y="4" width="10" height="10" rx="2"/>
+          <line x1="7" y1="4" x2="7" y2="1.5"/><line x1="11" y1="4" x2="11" y2="1.5"/>
+          <line x1="7" y1="14" x2="7" y2="16.5"/><line x1="11" y1="14" x2="11" y2="16.5"/>
+          <line x1="4" y1="7" x2="1.5" y2="7"/><line x1="4" y1="11" x2="1.5" y2="11"/>
+          <line x1="14" y1="7" x2="16.5" y2="7"/><line x1="14" y1="11" x2="16.5" y2="11"/>
+        </svg>
+        <h2 class="modal-title">Connect to IBM Bob</h2>
+        <p class="modal-subtitle">Enter your API credentials to enable the model.</p>
+      </div>
+      <div class="modal-body">
+        <div class="field">
+          <label class="field-label" for="apiUrl">MCP Server URL</label>
+          <input
+            class="field-input"
+            type="url"
+            id="apiUrl"
+            placeholder="https://your-mcp-server/v1/chat"
+            autocomplete="off"
+            spellcheck="false"
+          />
+        </div>
+        <div class="field">
+          <label class="field-label" for="apiKey">API Key</label>
+          <div class="field-row">
+            <input
+              class="field-input"
+              type="password"
+              id="apiKey"
+              placeholder="Enter your IBM Bob API key"
+              autocomplete="off"
+              spellcheck="false"
+            />
+            <button class="toggle-key-btn" id="toggleKey" type="button">Show</button>
+          </div>
+        </div>
+        <p class="modal-error modal-hidden" id="modalError"></p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-skip" id="skipBtn" type="button">Continue in mock mode</button>
+        <button class="btn-connect" id="connectBtn" type="button">Connect</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
